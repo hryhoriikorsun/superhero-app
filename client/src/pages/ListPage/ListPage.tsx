@@ -1,49 +1,71 @@
-import { useEffect, useState } from "react"
-import { getAll } from "../../api/superhero";
-
-interface Superhero {
-  id: string,
-  nickname: string,
-  real_name: string,
-  origin_description: string,
-  superpowers: string[],
-  catch_phrase: string,
-  images: string[],
-}
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom";
+import { useHeroStore } from "../../stores/heroStore";
+import type { Superhero } from "../../types/Superhero";
 
 export const ListPage = () => {
-  const [superheroes, setSuperheroes] = useState<Superhero[]>([]);
+  const navigate = useNavigate();
+
+  const { allHeros, isLoading, featchAllHeros, deleteHero } = useHeroStore();
+
+  const handleRemoveHero = (id: Superhero['id']) => {
+    deleteHero(id);
+    navigate(0);
+  }
 
   useEffect(() => {
-    getAll().then(setSuperheroes);
-  }, [])
+    featchAllHeros();
+  }, [featchAllHeros]);
 
   return (
     <div className="">
-      <ul className="w-full grid grid-cols-3 gap-1">
-        {superheroes!.map(hero => {
-          return (
-            <li key={hero.id} className="h-90 bg-blue-100">
-              {hero.id}
-              <img
-                src={hero.images[0]}
-                alt={hero.images[0]}
-                className="h-50% w-auto"
-              />
-              <br />
-              <p>Nickname: {hero.nickname}</p>
-              <br />
-              <p>Real name: {hero.real_name}</p>
-              <br />
-              <p>Superpowers: {hero.superpowers}</p>
-              <br />
-              <p>Description: {hero.origin_description}</p>
+      {isLoading ?
+       <>Loaging...</>
+       :
+        <ul className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 ">
+          {allHeros.map(hero => {
+            return (
+              <li 
+                key={hero.id} 
+                 
+              >
+                <div className="flex justify-between">
+                  <p>{hero.real_name}</p>
+                  <button
+                    className=" cursor-pointer"
+                    onClick={() => handleRemoveHero(hero.id)}
+                  >
+                    remove
+                  </button>
+                </div>
 
-            </li>
-          )
-        })}
-      </ul>
-      ListPagefdvdfv
+                <div
+                className="bg-blue-100 relative hover:-translate-y-0.5"
+                onClick={() => navigate('/superhero', {
+                  state: {
+                    heroId: hero.id,
+                  }
+                })} 
+                >
+
+                  <img
+                    // src={`/superheros/${hero.images[0]}`}
+                    src={`http://localhost:3003/uploads/${hero.images[0]}`}
+                    alt={hero.nickname}
+                    className="w-full"
+                  />
+                  <div className="text-amber-50 text-shadow-lg/100  absolute bottom-1 p-2 h-full flex flex-col justify-end">
+                    <p className="">Nickname: {hero.nickname}</p>
+                    <p className="">Description: {hero.origin_description}</p>
+                  </div>
+
+                </div>
+
+              </li>
+            )
+          })}
+        </ul>
+       }
     </div>
   )
 }
